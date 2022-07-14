@@ -169,69 +169,88 @@ void Odometry::SaveOdometri() {
 // CubicSpline::CubicSpline() {
 //   setCourseParam();
 // }
-/*
-void CubicSpline::setCourseParam() {
-  int data = kCourseParamNum - 1;
-  for (int i = 0; i <= data; i++) {
-    a_.push_back(y[i]);
-  }
-  for (int i = 0; i < data; i++) {
-    if (i == 0) {
-      c_.push_back(0.0);
-    } else if (i == data) {
-      c_.push_back(0.0);
-    } else {
-      c_.push_back(3.0 * (a_[i-1] - 2.0 * a_[i] + a_[i+1]));
-    }
-  }
-  for (int i = 0; i < data; i++) {
-    if (i == 0) {
-      w_.push_back(0.0);
-    } else {
-      double tmp = 4.0 - w_[i-1];
-      c_[i] = (c_[i] - c_[i-1]) / tmp;
-      w_.push_back(1.0 / tmp);
-    }
-  }
-  for (int i = (data-1); i > 0; i--){
-      c_[i] = c_[i] - c_[i+1] * w_[i];
-  }
-  for (int i = 0; i <= data; i++) {
-    if (i == data) {
-      d_.push_back(0.0);
-      b_.push_back(0.0);
-    } else {
-      d_.push_back((c_[i+1] - c_[i]) / 3.0);
-      b_.push_back(a_[i+1] - a_[i] - c_[i] - d_[i]);
-    }
-  }
-}
-double CubicSpline::CalcEndpoint(const std::list<double> y){
-    int dt = y.size();
-    double dy = b_[j] + (c_[j] + d_[j] * dt) * dt;
-    return dy * dy;
-    return 0;
-}
-double CubicSpline::Calc(double t) {
-  int j = int(floor(t));
-  if (j < 0) {
-    j = 0;
-  } else if(j >= a_.size()) {
-    j = a_.size() - 1;
-  }
-  double dt = t - j;
-  double result = a_[j] + (b_[j] + (c_[j] + d_[j] * dt) * dt) * dt;
-  accl = 2 * c_[j] + 6 * d_[j] * dt;
-  return result;
-}
-*/
+
+// void CubicSpline::setCourseParam() {
+//   int data = kCourseParamNum - 1;
+//   for (int i = 0; i <= data; i++) {
+//     a_.push_back(y[i]);
+//   }
+//   for (int i = 0; i < data; i++) {
+//     if (i == 0) {
+//       c_.push_back(0.0);
+//     } else if (i == data) {
+//       c_.push_back(0.0);
+//     } else {
+//       c_.push_back(3.0 * (a_[i-1] - 2.0 * a_[i] + a_[i+1]));
+//     }
+//   }
+//   for (int i = 0; i < data; i++) {
+//     if (i == 0) {
+//       w_.push_back(0.0);
+//     } else {
+//       double tmp = 4.0 - w_[i-1];
+//       c_[i] = (c_[i] - c_[i-1]) / tmp;
+//       w_.push_back(1.0 / tmp);
+//     }
+//   }
+//   for (int i = (data-1); i > 0; i--){
+//       c_[i] = c_[i] - c_[i+1] * w_[i];
+//   }
+//   for (int i = 0; i <= data; i++) {
+//     if (i == data) {
+//       d_.push_back(0.0);
+//       b_.push_back(0.0);
+//     } else {
+//       d_.push_back((c_[i+1] - c_[i]) / 3.0);
+//       b_.push_back(a_[i+1] - a_[i] - c_[i] - d_[i]);
+//     }
+//   }
+// }
+// double CubicSpline::CalcEndpoint(const std::list<double> y){
+//     int dt = y.size();
+//     double dy = b_[j] + (c_[j] + d_[j] * dt) * dt;
+//     return dy * dy;
+//     return 0;
+// }
+// double CubicSpline::Calc(double t) {
+//   int j = int(floor(t));
+//   if (j < 0) {
+//     j = 0;
+//   } else if(j >= a_.size()) {
+//     j = a_.size() - 1;
+//   }
+//   double dt = t - j;
+//   double result = a_[j] + (b_[j] + (c_[j] + d_[j] * dt) * dt) * dt;
+//   accl = 2 * c_[j] + 6 * d_[j] * dt;
+//   return result;
+// }
+
 
 PurePursuit::PurePursuit()
   : x(0), y(0), yaw(0) {
   // cubic_spline_ = new CubicSpline();
+
   readTargetCourseCoordinate();
   pre_point_index = INT_MAX;
 }
+
+ 
+//  void PurePursuit::read_trajectry_file_x(){
+//   std::string str_buf;
+//   std::string str_conma_buf;
+
+//   std::string ifs_csv_file_path_x  = "course_x.csv";
+//   std::ifstream ifs_csv_file_x(ifs_csv_file_path_x);
+//   int i = 0;
+//   while (getline(ifs_csv_file_x, str_buf)) { 
+//     std::istringstream i_stream(str_buf);
+//     while (getline(i_stream, str_conma_buf, ',')) {
+//     double pre = stod(str_conma_buf);
+//     // course_x[i] = pre;
+//     i++;
+//     }
+//   }
+//  }
 
 void PurePursuit::readTargetCourseCoordinate() {
   // for (int i=0; i<size; i++) {
@@ -323,6 +342,8 @@ void PurePursuit::Update(double odometry_x, double odometry_y) {
 
   double delta;
   std::tie(target_ind, delta) = pursuit_control(target_ind);
+  //方位角から回転角
+  //回転角からモータパワー
 }
 
 Localize::Localize(MotorIo* motor_io) {
