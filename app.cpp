@@ -1,15 +1,10 @@
 
-#include <list>
-
-#include <vector>
-#include "app.h"
-
-
-#include "device_io.h"
 #include "etrc_info.h"
+#include "app.h"
+#include "device_io.h"
 #include "driving.h"
-#include "test_runner.h"
 #include "game_play.h"
+#include "test_runner.h"
 #include "state_manager.h"
 
 // #include <vector>
@@ -84,15 +79,10 @@ void main_task(intptr_t unused) {
     if (sensor_io->touch_sensor_pressed_) break;
     tslp_tsk(TASK_INTERVAL_DT_MS*1000U);
   }
-
-  // sta_cyc(UPDATE_INFO_CYC);
   tslp_tsk(START_INTERVAL_DT_MS*1000U);
 
   sta_cyc(EXEC_ACTION_CYC);
-  // ER_UINT type = ev3_sensor_get_type(EV3_PORT_C);
-  // char str[264];
-  // sprintf(str, "type: %d\n", type);
-  // syslog(LOG_NOTICE, str);
+
   tslp_tsk(TASK_INTERVAL_DT_MS*1000U);
 
   while (true) {
@@ -101,8 +91,6 @@ void main_task(intptr_t unused) {
   }
 
   odometry -> SaveOdometri();
-
-  // motor_io->Rotate();
   stp_cyc(EXEC_ACTION_CYC);
   stp_cyc(UPDATE_INFO_CYC);
   finalize();
@@ -111,7 +99,7 @@ void main_task(intptr_t unused) {
 
 void exec_action_task(intptr_t unused) {
 
-  // state_manager->Update(); 戻す
+  // state_manager->Update(); //戻す
   // motor_io->Rotate();
   localize->Update();
   ext_tsk();

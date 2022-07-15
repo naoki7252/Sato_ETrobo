@@ -1,4 +1,6 @@
 #include "etrc_info.h"
+// #include <math.h>
+// #include "app.h"
 
 Luminous::Luminous(SensorIo* sensor_io, Camera* camera)
     : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera) {
@@ -102,7 +104,7 @@ void Odometry::Update(){
   //   counts_r_=0;
   // }
 
-  // curr_index += 1;
+  curr_index += 1;
   counts_rs[curr_index] = counts_r_;
   counts_ls[curr_index] = counts_l_;
   locate_x[curr_index] = x;
@@ -135,9 +137,9 @@ void Odometry::Update(){
   // sprintf(str, "theta: %f\n", micro_theta*180/M_PI);
   // syslog(LOG_NOTICE, str);
 
-  char str[264];
-  sprintf(str, "theta: %f\n", theta_wa*180/M_PI);
-  syslog(LOG_NOTICE, str);  
+  // char str[264];
+  // sprintf(str, "theta: %f\n", theta_wa*180/M_PI);
+  // syslog(LOG_NOTICE, str);  
 }
 
 void Odometry::SaveOdometri() {
@@ -149,10 +151,14 @@ void Odometry::SaveOdometri() {
   //   fprintf(fp, str);
   // }
 
-  // for (int i=0; i<curr_index; i++) {
-  //   sprintf(str, "%f, %f\n", counts_rs[i], counts_ls[i]);
-  //   fprintf(fp, str);
-  // }
+  for (int i=0; i< 100; i++) {
+    sprintf(str, "%f, %f\n", counts_rs[i], counts_ls[i]);
+    fprintf(fp, str);
+  }
+
+  // printf("%d", curr_index);
+  sprintf(str, "%d\n", curr_index);
+  syslog(LOG_NOTICE, str);
 
   //  for (int i=0; i<curr_index; i++) {
   //    sprintf(str, "%u\n", secs[i]);

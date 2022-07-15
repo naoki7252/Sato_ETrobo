@@ -1,6 +1,8 @@
 #ifndef ETRC22_DRIVING_H_
 #define ETRC22_DRIVING_H_
 
+#include <list>
+
 #include "info_type.h"
 #include "etrc_info.h"
 #include "utils.h"
@@ -53,7 +55,7 @@ class EndCondition {
 
  private:
   Luminous* luminous_;
-  // Localize* localize_;
+  Localize* localize_;
   Odometry* odometry_;
   End end_type_;
   Color end_color_;
