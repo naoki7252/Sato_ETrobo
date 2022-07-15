@@ -22,6 +22,7 @@ Camera* camera;
 Luminous* luminous;
 // Pursuit* pursuit;
 Odometry* odometry;
+P_WheelsControl* p_wheels_control;
 Localize* localize;
 WheelsControl* wheels_control;
 BasicDriver* basic_driver;
@@ -41,7 +42,8 @@ static void initialize() {
   luminous = new Luminous(sensor_io, camera);
   // pursuit = new Pursuit();
   odometry = new Odometry(motor_io);
-  localize = new Localize(motor_io);
+  p_wheels_control = new P_WheelsControl(motor_io);
+  localize = new Localize(motor_io, p_wheels_control);
   wheels_control = new WheelsControl(motor_io);
   basic_driver = new BasicDriver(wheels_control);
   line_tracer = new LineTracer(wheels_control, luminous);
@@ -109,7 +111,7 @@ void main_task(intptr_t unused) {
 
 void exec_action_task(intptr_t unused) {
 
-  state_manager->Update();
+  // state_manager->Update(); 戻す
   // motor_io->Rotate();
   localize->Update();
   ext_tsk();

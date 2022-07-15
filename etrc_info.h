@@ -12,6 +12,8 @@
 
 #include "device_io.h"
 #include "info_type.h"
+// #include "utils.h"
+// #include "driving.h"
 
 const int kCourseParamNum = 1734;
 
@@ -77,9 +79,18 @@ class CubicSpline {
   //  std::list<double> w_;
 };
 
+class P_WheelsControl {
+ public:
+  P_WheelsControl(MotorIo* motor_io);
+  void P_exec(int8_t target_power_l, int8_t target_power_r);
+
+ private:
+  MotorIo* motor_io_;
+};
+
 class PurePursuit {
   public:
-   PurePursuit();
+   PurePursuit(P_WheelsControl* p_wheels_control);
    double x, y, yaw;
    void Update(double x, double y);
    void read_trajectry_file_x();
@@ -91,9 +102,18 @@ class PurePursuit {
    void readTargetCourseCoordinate();
    std::tuple<int, double> pursuit_control(int ind);
    std::tuple<int, double> search_target_index();
+   P_WheelsControl* p_wheels_control_;
 
+   int ind;
    int pre_point_index;
    const double lf = 50;
+   double turning_radius;
+   double p_ll;
+   double p_lr;
+   double p_d = 126;
+   double p_power_l;
+   double p_power_r;
+   int base_p_power = 80; 
 
   //  const float course_x[kCourseParamNum] = {};
   //  const float course_y[kCourseParamNum] = {};
@@ -103,7 +123,7 @@ class PurePursuit {
 
 class Localize {
  public:
-  Localize(MotorIo* motor_io);
+  Localize(MotorIo* motor_io, P_WheelsControl* p_wheels_control);
   void Update();
   double distance_ = 0;
   double odometry_x = 0;

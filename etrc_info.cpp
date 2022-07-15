@@ -225,9 +225,33 @@ void Odometry::SaveOdometri() {
 //   return result;
 // }
 
+P_WheelsControl::P_WheelsControl(MotorIo* motor_io) : motor_io_(motor_io) {
+}
 
-PurePursuit::PurePursuit()
-  : x(0), y(0), yaw(0) {
+void P_WheelsControl::P_exec(int8_t target_power_l, int8_t target_power_r) {
+  int8_t curr_power_l = motor_io_->power_l_;
+  if (target_power_l > curr_power_l) {
+    curr_power_l += 1;
+  } else if (target_power_l < curr_power_l) {
+    curr_power_l -= 1;
+  }
+
+  int8_t curr_power_r = motor_io_->power_r_;
+  if (target_power_r > curr_power_r) {
+    curr_power_r += 1;
+  } else if (target_power_r < curr_power_r) {
+    curr_power_r -= 1;
+  }
+
+  if (target_power_l == 0 && target_power_r == 0) {
+    motor_io_->StopWheels(true);
+  } else {
+    motor_io_->SetWheelsPower(curr_power_l, curr_power_r);
+  }
+}
+
+PurePursuit::PurePursuit(P_WheelsControl* p_wheels_control)
+  : p_wheels_control_(p_wheels_control), x(0), y(0), yaw(0) {
   // cubic_spline_ = new CubicSpline();
 
   readTargetCourseCoordinate();
@@ -268,7 +292,7 @@ double PurePursuit::calc_distance(double point_x, double point_y) {
 
 
 std::tuple<int, double> PurePursuit::search_target_index() {
-  int ind;
+  // int ind;
   if (pre_point_index == INT_MAX) {
     std::list<int> d;
 
@@ -342,13 +366,25 @@ void PurePursuit::Update(double odometry_x, double odometry_y) {
 
   double delta;
   std::tie(target_ind, delta) = pursuit_control(target_ind);
+
+  double L = calc_distance(course_x[ind], course_y[ind]);
+  turning_radius = L / (2*sin(delta));
+  p_lr = (turning_radius - p_d/2) * delta;
+  p_ll = (turning_radius + p_d/2) * delta;
+
+  p_power_r = base_p_power * p_lr/(p_lr + p_ll);
+  p_power_l = base_p_power * p_ll/(p_lr + p_ll);
+
+  p_wheels_control_->P_exec(p_power_l, p_power_r);
+
+
   //方位角から回転角
   //回転角からモータパワー
 }
 
-Localize::Localize(MotorIo* motor_io) {
+Localize::Localize(MotorIo* motor_io, P_WheelsControl* p_wheels_control) {
   odometry_ = new Odometry(motor_io);
-  pure_pursuit_ = new PurePursuit();
+  pure_pursuit_ = new PurePursuit(p_wheels_control);
 }
 
 void Localize::Update() {
