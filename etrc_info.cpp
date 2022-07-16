@@ -1,6 +1,4 @@
 #include "etrc_info.h"
-// #include <math.h>
-// #include "app.h"
 
 Luminous::Luminous(SensorIo* sensor_io, Camera* camera)
     : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera) {
@@ -151,14 +149,13 @@ void Odometry::SaveOdometri() {
   //   fprintf(fp, str);
   // }
 
-  for (int i=0; i< 100; i++) {
-    sprintf(str, "%f, %f\n", counts_rs[i], counts_ls[i]);
+  for (int i=0; i< curr_index; i++) {
+    sprintf(str, "%d, %d\n", counts_rs[i], counts_ls[i]);
     fprintf(fp, str);
   }
 
-  // printf("%d", curr_index);
-  sprintf(str, "%d\n", curr_index);
-  syslog(LOG_NOTICE, str);
+  // sprintf(str, "%d\n", curr_index);
+  // syslog(LOG_NOTICE, str);
 
   //  for (int i=0; i<curr_index; i++) {
   //    sprintf(str, "%u\n", secs[i]);
