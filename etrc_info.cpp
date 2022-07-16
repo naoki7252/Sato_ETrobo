@@ -408,6 +408,9 @@ void Localize::Update() {
   p_counts_rs[curr_p_index] = odometry_->counts_r_;
   p_counts_ls[curr_p_index] = odometry_->counts_l_;
 
+  p_cordinate_x[curr_p_index] = odometry_x;
+  p_cordinate_y[curr_p_index] = odometry_y;
+
   pure_pursuit_->Update(odometry_x, odometry_y);
 }
 
@@ -416,7 +419,7 @@ void Localize::SaveOdometry() {
 
   char str [256];
   for (int i=0; i< curr_p_index; i++) {
-  sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
+  sprintf(str, "%d, %d, %f, %f\n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
   fprintf(fp, str);
   }
 

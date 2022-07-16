@@ -133,6 +133,9 @@ class Localize {
   int32_t p_counts_rs[100000] = {};
   int32_t p_counts_ls[100000] = {};
 
+  double p_cordinate_x[100000] = {};
+  double p_cordinate_y[100000] = {};
+
   char str [256];
 
  private:
