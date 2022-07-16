@@ -40,6 +40,8 @@ class Odometry {
    Odometry(MotorIo* motor_io);
    void Update();
    void SaveOdometri();
+   int32_t counts_r_;
+   int32_t counts_l_;
    double distance = 0;
    double distance_ = 0;
    double distance_right = 0;
@@ -124,13 +126,19 @@ class Localize {
  public:
   Localize(MotorIo* motor_io, P_WheelsControl* p_wheels_control);
   void Update();
+  void SaveOdometry();
   double distance_ = 0;
   double odometry_x = 0;
   double odometry_y = 0;
+  int32_t p_counts_rs[100000] = {};
+  int32_t p_counts_ls[100000] = {};
+
+  char str [256];
 
  private:
   Odometry* odometry_;
   PurePursuit* pure_pursuit_;
+  int curr_p_index = 0;
   // clock_t before_time = 0;
   //char str[264];
   // struct timespec now_time;

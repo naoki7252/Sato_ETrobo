@@ -94,8 +94,8 @@ void Odometry::Update(){
   // syslog(LOG_NOTICE, str);
   // before_time = now;
   
-  int32_t counts_r_ = motor_io_->counts_r_;
-  int32_t counts_l_ = motor_io_->counts_l_;
+  counts_r_ = motor_io_->counts_r_;
+  counts_l_ = motor_io_->counts_l_;
 
   // if(counts_l_ > 50 && counts_r_ > 50) {
   //   counts_l_=0;
@@ -125,6 +125,9 @@ void Odometry::Update(){
   distance_right += A;
   theta_[curr_index] = theta_wa;
 
+  // sprintf(str, "%d, %d, %d\n", counts_rs[curr_index], counts_ls[curr_index], curr_index);
+  // syslog(LOG_NOTICE, str);
+
   // theta_[curr_index] = micro_theta;
 
   // char str[264];
@@ -140,19 +143,24 @@ void Odometry::Update(){
   // syslog(LOG_NOTICE, str);  
 }
 
-void Odometry::SaveOdometri() {
-  char str [256];
-  FILE* fp = fopen("Odome.csv", "w");
+// void Odometry::SaveOdometri() {
+  // char str [256];
+  // FILE* fp = fopen("Odome.csv", "w");
+
+  // sprintf(str, "%d, %d, %d\n", counts_rs[curr_index], counts_ls[curr_index], curr_index);
+  // syslog(LOG_NOTICE, str);
+
+
 
   // for (int i=0; i<curr_index; i++) {
   //   sprintf(str, "%f, %f\n", locate_x[i], locate_y[i]);
   //   fprintf(fp, str);
   // }
 
-  for (int i=0; i< curr_index; i++) {
-    sprintf(str, "%d, %d\n", counts_rs[i], counts_ls[i]);
-    fprintf(fp, str);
-  }
+  // for (int i=0; i< curr_index; i++) {
+  //   sprintf(str, "%d, %d\n", counts_rs[i], counts_ls[i]);
+  //   fprintf(fp, str);
+  // }
 
   // sprintf(str, "%d\n", curr_index);
   // syslog(LOG_NOTICE, str);
@@ -166,8 +174,8 @@ void Odometry::SaveOdometri() {
   //  sprintf(str, "%f\n", theta_[i]*180/M_PI);
   //  fprintf(fp, str);
   //}
-  fclose(fp);
-}
+  // fclose(fp);
+// }
 
 // CubicSpline::CubicSpline() {
 //   setCourseParam();
@@ -396,7 +404,51 @@ void Localize::Update() {
   odometry_x = odometry_->x;
   odometry_y = odometry_->y;
 
+  curr_p_index = odometry_->curr_index;
+  p_counts_rs[curr_p_index] = odometry_->counts_r_;
+  p_counts_ls[curr_p_index] = odometry_->counts_l_;
+
   pure_pursuit_->Update(odometry_x, odometry_y);
+}
+
+void Localize::SaveOdometry() {
+  FILE* fp = fopen("Odome.csv", "w");
+
+  char str [256];
+  for (int i=0; i< curr_p_index; i++) {
+  sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
+  fprintf(fp, str);
+  }
+
+  // sprintf(str, "%d, %d, %d\n", p_counts_rs[curr_index], counts_ls[curr_index], curr_index);
+  // // sprintf(str, "%d\n", curr_p_index);
+  // syslog(LOG_NOTICE, str);
+
+
+
+  // for (int i=0; i<curr_index; i++) {
+  //   sprintf(str, "%f, %f\n", locate_x[i], locate_y[i]);
+  //   fprintf(fp, str);
+  // }
+
+  // for (int i=0; i< curr_index; i++) {
+  //   sprintf(str, "%d, %d\n", counts_rs[i], counts_ls[i]);
+  //   fprintf(fp, str);
+  // }
+
+  // sprintf(str, "%d\n", curr_index);
+  // syslog(LOG_NOTICE, str);
+
+  //  for (int i=0; i<curr_index; i++) {
+  //    sprintf(str, "%u\n", secs[i]);
+  //    fprintf(fp, str);
+  //  }
+
+  //for (int i=0; i<curr_index; i++) {
+  //  sprintf(str, "%f\n", theta_[i]*180/M_PI);
+  //  fprintf(fp, str);
+  //}
+  fclose(fp);
 }
 
  
