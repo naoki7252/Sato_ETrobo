@@ -116,11 +116,12 @@ void Odometry::Update(){
   theta = counts_r_;
   double A = (Lr + Ll) / 2 * (1 - 0);
   double dx = A * cos(theta_wa + micro_theta / 2);
-  double dy = A * sin(theta_wa + micro_theta / 2);
+  double dy =  (A * sin(theta_wa + micro_theta / 2));
   double dd = sqrt(dx * dx + dy * dy);
 
-  x += dx;
+  x += dx;//まいなすかけたよ
   y += dy;
+
   distance_ += dd;
   distance_right += A;
   theta_[curr_index] = theta_wa;
@@ -143,39 +144,6 @@ void Odometry::Update(){
   // syslog(LOG_NOTICE, str);  
 }
 
-// void Odometry::SaveOdometri() {
-  // char str [256];
-  // FILE* fp = fopen("Odome.csv", "w");
-
-  // sprintf(str, "%d, %d, %d\n", counts_rs[curr_index], counts_ls[curr_index], curr_index);
-  // syslog(LOG_NOTICE, str);
-
-
-
-  // for (int i=0; i<curr_index; i++) {
-  //   sprintf(str, "%f, %f\n", locate_x[i], locate_y[i]);
-  //   fprintf(fp, str);
-  // }
-
-  // for (int i=0; i< curr_index; i++) {
-  //   sprintf(str, "%d, %d\n", counts_rs[i], counts_ls[i]);
-  //   fprintf(fp, str);
-  // }
-
-  // sprintf(str, "%d\n", curr_index);
-  // syslog(LOG_NOTICE, str);
-
-  //  for (int i=0; i<curr_index; i++) {
-  //    sprintf(str, "%u\n", secs[i]);
-  //    fprintf(fp, str);
-  //  }
-
-  //for (int i=0; i<curr_index; i++) {
-  //  sprintf(str, "%f\n", theta_[i]*180/M_PI);
-  //  fprintf(fp, str);
-  //}
-  // fclose(fp);
-// }
 
 // CubicSpline::CubicSpline() {
 //   setCourseParam();
@@ -239,20 +207,23 @@ void Odometry::Update(){
 P_WheelsControl::P_WheelsControl(MotorIo* motor_io) : motor_io_(motor_io) {
 }
 
-void P_WheelsControl::P_exec(int8_t target_power_l, int8_t target_power_r) {
-  int8_t curr_power_l = motor_io_->power_l_;
+void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r) {
+  int32_t curr_power_l = motor_io_->power_l_;
   if (target_power_l > curr_power_l) {
     curr_power_l += 1;
   } else if (target_power_l < curr_power_l) {
     curr_power_l -= 1;
   }
 
-  int8_t curr_power_r = motor_io_->power_r_;
+  int32_t curr_power_r = motor_io_->power_r_;
   if (target_power_r > curr_power_r) {
     curr_power_r += 1;
+
+
   } else if (target_power_r < curr_power_r) {
     curr_power_r -= 1;
   }
+
 
   if (target_power_l == 0 && target_power_r == 0) {
     motor_io_->StopWheels(true);
@@ -262,7 +233,7 @@ void P_WheelsControl::P_exec(int8_t target_power_l, int8_t target_power_r) {
 }
 
 PurePursuit::PurePursuit(P_WheelsControl* p_wheels_control)
-  : p_wheels_control_(p_wheels_control), x(0), y(0), yaw(0) {
+  : p_wheels_control_(p_wheels_control), x(363.8), y(957.1), yaw(M_PI) {
   // cubic_spline_ = new CubicSpline();
 
   readTargetCourseCoordinate();
@@ -310,11 +281,17 @@ std::tuple<int, double> PurePursuit::search_target_index() {
     for (int i = 0; i < kCourseParamNum; i++) {
       double dx = x - course_x[i];
       double dy = y - course_y[i];
+
+      // sprintf(str, "x: %f, y: %f \n", x, y);
+      // syslog(LOG_NOTICE, str);
+
       d.push_back(hypot(dx, dy));
     }
     std::list<int>::iterator minIt = std::min_element(d.begin(), d.end());
     ind = std::distance(d.begin(), minIt);
     pre_point_index = ind;
+    // sprintf(str, "ind: %d \n",ind);
+    // syslog(LOG_NOTICE, str);
 
   } else {
     ind = pre_point_index;
@@ -325,6 +302,10 @@ std::tuple<int, double> PurePursuit::search_target_index() {
       if (distance < next_distance) break;
       if (ind + 1 < kCourseParamNum) {
         ind++;
+
+      // sprintf(b, "b: %d \n",1);
+      // syslog(LOG_NOTICE, b);
+
       }
 
       distance = next_distance;
@@ -336,6 +317,10 @@ std::tuple<int, double> PurePursuit::search_target_index() {
   while (lf > calc_distance(course_x[ind], course_y[ind])) {
     if (ind > kCourseParamNum) break;
     ind += 1;
+
+      //sprintf(c, "c: %d \n",2);
+
+      //syslog(LOG_NOTICE, c);
   }
 
   return std::forward_as_tuple(ind, lf);
@@ -363,6 +348,9 @@ std::tuple<int, double> PurePursuit::pursuit_control(int pind) {
 
   double alpha = atan2(ty - y, tx - x);
 
+    sprintf(d, "x: %f, y: %f\n", x, y);
+    syslog(LOG_NOTICE, d);
+
   return std::forward_as_tuple(target_ind, alpha);
 }
 
@@ -370,25 +358,59 @@ std::tuple<int, double> PurePursuit::pursuit_control(int pind) {
 void PurePursuit::Update(double odometry_x, double odometry_y) {
   double lf;
   int target_ind;
-  x = odometry_x;
-  y = odometry_y;
+  
 
   std::tie(target_ind, lf) = search_target_index();
 
+   //sprintf(a, "target_ind: %d\n", target_ind);
+   //syslog(LOG_NOTICE, a);
+
   double delta;
   std::tie(target_ind, delta) = pursuit_control(target_ind);
+     double L = calc_distance(course_x[ind], course_y[ind]);
+     //double L = calc_distance(177, 156);
+    //turning_radius = L / (2*sin(delta));
+     omega = base_p_power * 2 * sin(delta) / L;
+    //  p_lr = (turning_radius - p_d/2) * delta;
+    //  p_ll = (turning_radius + p_d/2) * delta;
+      omega = omega * para;
+      p_power_r = base_p_power + omega;
+      p_power_l = base_p_power - omega;
 
-  double L = calc_distance(course_x[ind], course_y[ind]);
-  turning_radius = L / (2*sin(delta));
-  p_lr = (turning_radius - p_d/2) * delta;
-  p_ll = (turning_radius + p_d/2) * delta;
+  
+  
+  // double theta = M_PI;
+  // // double theta = 0; 
+  // double L = 100;
+  // if (theta == 0 || theta == M_PI) turning_radius = 0; 
+  // else turning_radius = L / (2 * sin(theta));
+  // p_lr = (turning_radius - p_d/2) * theta;
+  // p_ll = (turning_radius + p_d/2) * theta;
 
-  p_power_r = base_p_power * p_lr/(p_lr + p_ll);
-  p_power_l = base_p_power * p_ll/(p_lr + p_ll);
+  // p_power_r = 70;
+  // p_power_l = 70;
 
-  p_wheels_control_->P_exec(p_power_l, p_power_r);
+  // p_power_r = base_p_power * p_lr/(p_lr + p_ll);
+  // p_power_l = base_p_power * p_ll/(p_lr + p_ll);
 
 
+  // sprintf(str, "target_ind: %d\n", target_ind);
+
+  int32_t ppower_l =  (int)p_power_l; 
+  int32_t ppower_r =  (int)p_power_r; 
+
+   sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f, omega: %f, target_ind: %d\n", ppower_r, ppower_l, p_power_r, p_power_l, delta, target_ind);
+   syslog(LOG_NOTICE, a);
+
+  p_wheels_control_->P_exec(ppower_l, ppower_r);
+
+  // p_wheels_control_->P_exec(-300, 128);
+
+  //x += v * cos(delta); 
+  //y += v * sin(delta); 
+
+  x = odometry_x;//更新
+  y = odometry_y;//更新　一番最後に
   //方位角から回転角
   //回転角からモータパワー
 }
@@ -404,12 +426,30 @@ void Localize::Update() {
   odometry_x = odometry_->x;
   odometry_y = odometry_->y;
 
+  simu_x = pure_pursuit_ -> x;
+  simu_y = pure_pursuit_ -> y;
+
+  // p_target_ind = pure_pursuit_-> target_ind;
+
   curr_p_index = odometry_->curr_index;
   p_counts_rs[curr_p_index] = odometry_->counts_r_;
   p_counts_ls[curr_p_index] = odometry_->counts_l_;
 
   p_cordinate_x[curr_p_index] = odometry_x;
   p_cordinate_y[curr_p_index] = odometry_y;
+
+  simulate_x[curr_p_index] = simu_x;
+  simulate_y[curr_p_index] = simu_y;
+
+  // target_ind[curr_p_index] = p_target_ind;
+
+
+
+  real_distance = sqrt(odometry_x * odometry_x + odometry_y * odometry_y);
+  // sprintf(str, "real_distance: %f\n", real_distance);
+
+  // sprintf(str, "curr_p_index: %d\n", curr_p_index);
+  // syslog(LOG_NOTICE, str); 
 
   pure_pursuit_->Update(odometry_x, odometry_y);
 }
@@ -418,8 +458,17 @@ void Localize::SaveOdometry() {
   FILE* fp = fopen("Odome.csv", "w");
 
   char str [256];
+
+  // for (int i=0; i< curr_p_index; i++) {
+  // sprintf(str, "%f, %f\n", simulate_x[i], simulate_y[i]);
+  // // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
+  // fprintf(fp, str);
+  // }
+
+
   for (int i=0; i< curr_p_index; i++) {
-  sprintf(str, "%d, %d, %f, %f\n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
+  sprintf(str, "%d, %d, %f, %f, \n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
+  // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
   fprintf(fp, str);
   }
 

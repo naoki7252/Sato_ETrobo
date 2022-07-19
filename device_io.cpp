@@ -18,7 +18,7 @@ void MotorIo::Update() {
   power_r_ = static_cast<int8_t>(ev3_motor_get_power(EV3_PORT_B));
 }
 
-void MotorIo::SetWheelsPower(int8_t power_l, int8_t power_r) {
+void MotorIo::SetWheelsPower(int32_t power_l, int32_t power_r) {
   const int8_t kUpperLimit = 100;
   const int8_t kLowerLimit = -100;
 

@@ -8,15 +8,15 @@ class MotorIo {
   MotorIo();
   ~MotorIo();
   void Update();
-  void SetWheelsPower(int8_t power_l, int8_t power_r);
+  void SetWheelsPower(int32_t power_l, int32_t power_r);
   void StopWheels(bool brake);
   void Rotate();
   void TestRun();
 
   int32_t counts_l_;
   int32_t counts_r_;
-  int8_t power_l_;
-  int8_t power_r_;
+  int32_t power_l_;
+  int32_t power_r_;
 
  private:
   void ResetCounts();
