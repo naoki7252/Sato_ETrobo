@@ -97,11 +97,6 @@ void Odometry::Update(){
   counts_r_ = motor_io_->counts_r_;
   counts_l_ = motor_io_->counts_l_;
 
-  // if(counts_l_ > 50 && counts_r_ > 50) {
-  //   counts_l_=0;
-  //   counts_r_=0;
-  // }
-
   curr_index += 1;
   counts_rs[curr_index] = counts_r_;
   counts_ls[curr_index] = counts_l_;
@@ -119,8 +114,15 @@ void Odometry::Update(){
   double dy =  (A * sin(theta_wa + micro_theta / 2));
   double dd = sqrt(dx * dx + dy * dy);
 
-  x += dx;//まいなすかけたよ
+  before_x = x;
+  before_y = y;
+
+  x += dx;
   y += dy;
+
+  difference_x = x - before_x;
+  difference_y = y - before_y;
+  direction = atan2(difference_y, difference_x);
 
   distance_ += dd;
   distance_right += A;
@@ -144,65 +146,6 @@ void Odometry::Update(){
   // syslog(LOG_NOTICE, str);  
 }
 
-
-// CubicSpline::CubicSpline() {
-//   setCourseParam();
-// }
-
-// void CubicSpline::setCourseParam() {
-//   int data = kCourseParamNum - 1;
-//   for (int i = 0; i <= data; i++) {
-//     a_.push_back(y[i]);
-//   }
-//   for (int i = 0; i < data; i++) {
-//     if (i == 0) {
-//       c_.push_back(0.0);
-//     } else if (i == data) {
-//       c_.push_back(0.0);
-//     } else {
-//       c_.push_back(3.0 * (a_[i-1] - 2.0 * a_[i] + a_[i+1]));
-//     }
-//   }
-//   for (int i = 0; i < data; i++) {
-//     if (i == 0) {
-//       w_.push_back(0.0);
-//     } else {
-//       double tmp = 4.0 - w_[i-1];
-//       c_[i] = (c_[i] - c_[i-1]) / tmp;
-//       w_.push_back(1.0 / tmp);
-//     }
-//   }
-//   for (int i = (data-1); i > 0; i--){
-//       c_[i] = c_[i] - c_[i+1] * w_[i];
-//   }
-//   for (int i = 0; i <= data; i++) {
-//     if (i == data) {
-//       d_.push_back(0.0);
-//       b_.push_back(0.0);
-//     } else {
-//       d_.push_back((c_[i+1] - c_[i]) / 3.0);
-//       b_.push_back(a_[i+1] - a_[i] - c_[i] - d_[i]);
-//     }
-//   }
-// }
-// double CubicSpline::CalcEndpoint(const std::list<double> y){
-//     int dt = y.size();
-//     double dy = b_[j] + (c_[j] + d_[j] * dt) * dt;
-//     return dy * dy;
-//     return 0;
-// }
-// double CubicSpline::Calc(double t) {
-//   int j = int(floor(t));
-//   if (j < 0) {
-//     j = 0;
-//   } else if(j >= a_.size()) {
-//     j = a_.size() - 1;
-//   }
-//   double dt = t - j;
-//   double result = a_[j] + (b_[j] + (c_[j] + d_[j] * dt) * dt) * dt;
-//   accl = 2 * c_[j] + 6 * d_[j] * dt;
-//   return result;
-// }
 
 P_WheelsControl::P_WheelsControl(MotorIo* motor_io) : motor_io_(motor_io) {
 }
@@ -234,180 +177,40 @@ void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r) {
 
 PurePursuit::PurePursuit(P_WheelsControl* p_wheels_control)
   : p_wheels_control_(p_wheels_control), x(363.8), y(957.1), yaw(M_PI) {
-  // cubic_spline_ = new CubicSpline();
-
-  readTargetCourseCoordinate();
   pre_point_index = INT_MAX;
 }
-
- 
-//  void PurePursuit::read_trajectry_file_x(){
-//   std::string str_buf;
-//   std::string str_conma_buf;
-
-//   std::string ifs_csv_file_path_x  = "course_x.csv";
-//   std::ifstream ifs_csv_file_x(ifs_csv_file_path_x);
-//   int i = 0;
-//   while (getline(ifs_csv_file_x, str_buf)) { 
-//     std::istringstream i_stream(str_buf);
-//     while (getline(i_stream, str_conma_buf, ',')) {
-//     double pre = stod(str_conma_buf);
-//     // course_x[i] = pre;
-//     i++;
-//     }
-//   }
-//  }
-
-void PurePursuit::readTargetCourseCoordinate() {
-  // for (int i=0; i<size; i++) {
-  //   course_x[i] = ;
-  //   course_y[i] = ;
-  // }
-}
-
-double PurePursuit::calc_distance(double point_x, double point_y) {
-  double dx = x - point_x;
-  double dy = y - point_y;
-
-  return hypot(dx, dy);
-}
-
-
-std::tuple<int, double> PurePursuit::search_target_index() {
-  // int ind;
-  if (pre_point_index == INT_MAX) {
-    std::list<int> d;
-
-    for (int i = 0; i < kCourseParamNum; i++) {
-      double dx = x - course_x[i];
-      double dy = y - course_y[i];
-
-      // sprintf(str, "x: %f, y: %f \n", x, y);
-      // syslog(LOG_NOTICE, str);
-
-      d.push_back(hypot(dx, dy));
-    }
-    std::list<int>::iterator minIt = std::min_element(d.begin(), d.end());
-    ind = std::distance(d.begin(), minIt);
-    pre_point_index = ind;
-    // sprintf(str, "ind: %d \n",ind);
-    // syslog(LOG_NOTICE, str);
-
-  } else {
-    ind = pre_point_index;
-    double distance = calc_distance(course_x[ind],course_y[ind]);
-
-    while (true) {
-      double next_distance = calc_distance(course_x[ind+1], course_y[ind+1]);
-      if (distance < next_distance) break;
-      if (ind + 1 < kCourseParamNum) {
-        ind++;
-
-      // sprintf(b, "b: %d \n",1);
-      // syslog(LOG_NOTICE, b);
-
-      }
-
-      distance = next_distance;
-    }
-
-    pre_point_index = ind;
-  }
-
-  while (lf > calc_distance(course_x[ind], course_y[ind])) {
-    if (ind > kCourseParamNum) break;
-    ind += 1;
-
-      //sprintf(c, "c: %d \n",2);
-
-      //syslog(LOG_NOTICE, c);
-  }
-
-  return std::forward_as_tuple(ind, lf);
-}
-
-std::tuple<int, double> PurePursuit::pursuit_control(int pind) {
-  int target_ind;
-  double lf;
-  std::tie(target_ind, lf) = search_target_index();
-
-  if (pind >= target_ind) {
-    target_ind = pind;
-  }
-
-  double tx,ty;
-  if (target_ind < kCourseParamNum) {
-      tx = course_x[target_ind];
-      ty = course_y[target_ind];
-
-  } else {
-      tx = course_x[kCourseParamNum-1];
-      ty = course_y[kCourseParamNum-1];
-      target_ind = kCourseParamNum-1;
-  }
-
-  double alpha = atan2(ty - y, tx - x);
-
-    sprintf(d, "x: %f, y: %f\n", x, y);
-    syslog(LOG_NOTICE, d);
-
-  return std::forward_as_tuple(target_ind, alpha);
-}
-
 
 void PurePursuit::Update(double odometry_x, double odometry_y) {
   double lf;
   int target_ind;
-  
+  direction_ = odometry_ -> direction;  
 
-  std::tie(target_ind, lf) = search_target_index();
+  target_distance = sqrt((target[i][0] - odometry_x) * (target[i][0] - odometry_x) + (target[i][1] - odometry_y) * (target[i][1] - odometry_y));
+  target_direction = atan2((target[i][1] - odometry_y), (target[i][0] - odometry_x));
+  difference_rad = target_direction - direction_;
 
-   //sprintf(a, "target_ind: %d\n", target_ind);
-   //syslog(LOG_NOTICE, a);
-
-  double delta;
-  std::tie(target_ind, delta) = pursuit_control(target_ind);
-     double L = calc_distance(course_x[ind], course_y[ind]);
-     //double L = calc_distance(177, 156);
-    //turning_radius = L / (2*sin(delta));
-     omega = base_p_power * 2 * sin(delta) / L;
-    //  p_lr = (turning_radius - p_d/2) * delta;
-    //  p_ll = (turning_radius + p_d/2) * delta;
-      omega = omega * para;
-      p_power_r = base_p_power + omega;
-      p_power_l = base_p_power - omega;
+  // while (difference_rad > 4.7) //第四象限からの変換（偏角）
+  //   {
+  //       difference_rad = difference_rad - 6.28;
+  //   }
+  //   while (difference_rad < -4.7)
+  //   {
+  //       difference_rad = difference_rad + 6.28;
+  //   }
 
   
-  
-  // double theta = M_PI;
-  // // double theta = 0; 
-  // double L = 100;
-  // if (theta == 0 || theta == M_PI) turning_radius = 0; 
-  // else turning_radius = L / (2 * sin(theta));
-  // p_lr = (turning_radius - p_d/2) * theta;
-  // p_ll = (turning_radius + p_d/2) * theta;
-
-  // p_power_r = 70;
-  // p_power_l = 70;
-
-  // p_power_r = base_p_power * p_lr/(p_lr + p_ll);
-  // p_power_l = base_p_power * p_ll/(p_lr + p_ll);
-
-
-  // sprintf(str, "target_ind: %d\n", target_ind);
+  p_power_r = gain_kv * target_distance + gain_kt * difference_rad + base_p_power;
+  p_power_l = gain_kv * target_distance - gain_kt * difference_rad + base_p_power;
 
   int32_t ppower_l =  (int)p_power_l; 
   int32_t ppower_r =  (int)p_power_r; 
 
-   sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f, omega: %f, target_ind: %d\n", ppower_r, ppower_l, p_power_r, p_power_l, delta, target_ind);
+   sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f\n", ppower_r, ppower_l, p_power_r, p_power_l);
    syslog(LOG_NOTICE, a);
 
   p_wheels_control_->P_exec(ppower_l, ppower_r);
 
   // p_wheels_control_->P_exec(-300, 128);
-
-  //x += v * cos(delta); 
-  //y += v * sin(delta); 
 
   x = odometry_x;//更新
   y = odometry_y;//更新　一番最後に
