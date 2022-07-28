@@ -18,6 +18,7 @@ Luminous* luminous;
 // Pursuit* pursuit;
 Odometry* odometry;
 P_WheelsControl* p_wheels_control;
+PurePursuit* purepursuit;
 Localize* localize;
 WheelsControl* wheels_control;
 BasicDriver* basic_driver;
@@ -38,6 +39,7 @@ static void initialize() {
   // pursuit = new Pursuit();
   odometry = new Odometry(motor_io);
   p_wheels_control = new P_WheelsControl(motor_io);
+  purepursuit = new PurePursuit(motor_io, p_wheels_control);
   localize = new Localize(motor_io, p_wheels_control);
   wheels_control = new WheelsControl(motor_io);
   basic_driver = new BasicDriver(wheels_control);
@@ -63,6 +65,8 @@ static void finalize() {
   delete basic_driver;
   delete wheels_control;
   delete localize;
+  delete purepursuit;
+  delete p_wheels_control;
   delete odometry;
   delete luminous;
   delete camera;

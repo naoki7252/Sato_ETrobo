@@ -1,28 +1,33 @@
 #include "etrc_info.h"
 
-Luminous::Luminous(SensorIo* sensor_io, Camera* camera)
-    : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera) {
+Luminous::Luminous(SensorIo *sensor_io, Camera *camera)
+    : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera)
+{
 }
 
-void Luminous::Update() {
+void Luminous::Update()
+{
   UpdateRgb();
   UpdateHsv();
   UpdateColor();
 }
 
-void Luminous::SetColorReference(Color c, Hsv hsv) {
+void Luminous::SetColorReference(Color c, Hsv hsv)
+{
   color_ref_[c] = hsv;
 }
 
-void Luminous::UpdateRgb() {
+void Luminous::UpdateRgb()
+{
   rgb_raw_t val = sensor_io_->color_rgb_raw_;
-  
+
   rgb_.r = val.r;
   rgb_.g = val.g;
   rgb_.b = val.b;
 }
 
-void Luminous::UpdateHsv() {
+void Luminous::UpdateHsv()
+{
   float r = static_cast<float>(rgb_.r);
   float g = static_cast<float>(rgb_.g);
   float b = static_cast<float>(rgb_.b);
@@ -34,31 +39,45 @@ void Luminous::UpdateHsv() {
   float c = max - min;
 
   float h;
-  if (c == 0) {
+  if (c == 0)
+  {
     h = -1;
-  } else if (max == r) {
+  }
+  else if (max == r)
+  {
     h = fmodf(((g - b) / c), 6);
-  } else if (max == g) {
+  }
+  else if (max == g)
+  {
     h = ((b - r) / c) + 2;
-  } else if (max == b) {
+  }
+  else if (max == b)
+  {
     h = ((r - g) / c) + 4;
-  } else {
+  }
+  else
+  {
     h = -1;
   }
 
-  if (h != -1) {
+  if (h != -1)
+  {
     h = 60 * h;
   }
 
   float s;
-  if (max == 0) {
+  if (max == 0)
+  {
     s = 0;
-  } else {
+  }
+  else
+  {
     s = c / max;
   }
 
   float v = max;
-  if (v > 100) {
+  if (v > 100)
+  {
     v = 100;
   }
 
@@ -67,14 +86,17 @@ void Luminous::UpdateHsv() {
   hsv_.v = v;
 }
 
-void Luminous::UpdateColor() {
+void Luminous::UpdateColor()
+{
 }
 
-Odometry::Odometry(MotorIo* motor_io)
-  : motor_io_(motor_io) {
+Odometry::Odometry(MotorIo *motor_io)
+    : motor_io_(motor_io)
+{
 }
 
-void Odometry::Update(){
+void Odometry::Update()
+{
   // unsigned long sec;
   // clock_gettime(CLOCK_REALTIME, &now_time);
   // sec = now_time.tv_sec;
@@ -89,11 +111,11 @@ void Odometry::Update(){
   // nsec = now_time.tv_nsec;
   // clock_t now = clock();
   // // double a = (static_cast<double>(now-before_time))/CLOCKS_PER_SEC;
-  // // double keep += a;  
+  // // double keep += a;
   // sprintf(str, "time: %f sum: %f\n", (static_cast<double>(now-before_time))/CLOCKS_PER_SEC);
   // syslog(LOG_NOTICE, str);
   // before_time = now;
-  
+
   counts_r_ = motor_io_->counts_r_;
   counts_l_ = motor_io_->counts_l_;
 
@@ -111,7 +133,7 @@ void Odometry::Update(){
   theta = counts_r_;
   double A = (Lr + Ll) / 2 * (1 - 0);
   double dx = A * cos(theta_wa + micro_theta / 2);
-  double dy =  (A * sin(theta_wa + micro_theta / 2));
+  double dy = (A * sin(theta_wa + micro_theta / 2));
   double dd = sqrt(dx * dx + dy * dy);
 
   before_x = x;
@@ -138,99 +160,131 @@ void Odometry::Update(){
   // syslog(LOG_NOTICE, str);
 
   // char str[264];
-  // sprintf(str, "theta: %f\n", micro_theta*180/M_PI);
+  // sprintf(str, "x: %f y: %f before_x: %f before_y: %f \n", x, y, before_x, before_y);
+  // syslog(LOG_NOTICE, str);
+
+  // char str[264];
+  // sprintf(str, "diff_x: %f diff_y: %f\n", difference_x, difference_y);
+  // syslog(LOG_NOTICE, str);
+
+  // char str[264];
+  // sprintf(str, "direction: %f\n", direction);
   // syslog(LOG_NOTICE, str);
 
   // char str[264];
   // sprintf(str, "theta: %f\n", theta_wa*180/M_PI);
-  // syslog(LOG_NOTICE, str);  
+  // syslog(LOG_NOTICE, str);
 }
 
-
-P_WheelsControl::P_WheelsControl(MotorIo* motor_io) : motor_io_(motor_io) {
+P_WheelsControl::P_WheelsControl(MotorIo *motor_io) : motor_io_(motor_io)
+{
 }
 
-void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r) {
+void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r)
+{
   int32_t curr_power_l = motor_io_->power_l_;
-  if (target_power_l > curr_power_l) {
+  if (target_power_l > curr_power_l)
+  {
     curr_power_l += 1;
-  } else if (target_power_l < curr_power_l) {
+  }
+  else if (target_power_l < curr_power_l)
+  {
     curr_power_l -= 1;
   }
 
   int32_t curr_power_r = motor_io_->power_r_;
-  if (target_power_r > curr_power_r) {
+  if (target_power_r > curr_power_r)
+  {
     curr_power_r += 1;
-
-
-  } else if (target_power_r < curr_power_r) {
+  }
+  else if (target_power_r < curr_power_r)
+  {
     curr_power_r -= 1;
   }
 
-
-  if (target_power_l == 0 && target_power_r == 0) {
+  if (target_power_l == 0 && target_power_r == 0)
+  {
     motor_io_->StopWheels(true);
-  } else {
+  }
+  else
+  {
     motor_io_->SetWheelsPower(curr_power_l, curr_power_r);
   }
 }
 
-PurePursuit::PurePursuit(P_WheelsControl* p_wheels_control)
-  : p_wheels_control_(p_wheels_control), x(363.8), y(957.1), yaw(M_PI) {
-  pre_point_index = INT_MAX;
+PurePursuit::PurePursuit(MotorIo *motor_io, P_WheelsControl *p_wheels_control)
+    : motor_io_(motor_io), p_wheels_control_(p_wheels_control)
+{
+  // pre_point_index = INT_MAX;
+  odometry_ = new Odometry(motor_io);
 }
 
-void PurePursuit::Update(double odometry_x, double odometry_y) {
-  double lf;
-  int target_ind;
-  direction_ = odometry_ -> direction;  
+void PurePursuit::Update(double odometry_x, double odometry_y)
+{
+  odometry_->Update();
+  direction_odo = odometry_->direction;
 
   target_distance = sqrt((target[i][0] - odometry_x) * (target[i][0] - odometry_x) + (target[i][1] - odometry_y) * (target[i][1] - odometry_y));
   target_direction = atan2((target[i][1] - odometry_y), (target[i][0] - odometry_x));
-  difference_rad = target_direction - direction_;
+  difference_rad = target_direction - direction_odo;
 
-  // while (difference_rad > 4.7) //第四象限からの変換（偏角）
-  //   {
-  //       difference_rad = difference_rad - 6.28;
-  //   }
-  //   while (difference_rad < -4.7)
-  //   {
-  //       difference_rad = difference_rad + 6.28;
-  //   }
+  while (difference_rad > 4.7) //第四象限からの変換（偏角）
+  {
+    difference_rad = difference_rad - 6.28;
+  }
+  while (difference_rad < -4.7)
+  {
+    difference_rad = difference_rad + 6.28;
+  }
 
-  
   p_power_r = gain_kv * target_distance + gain_kt * difference_rad + base_p_power;
   p_power_l = gain_kv * target_distance - gain_kt * difference_rad + base_p_power;
 
-  int32_t ppower_l =  (int)p_power_l; 
-  int32_t ppower_r =  (int)p_power_r; 
+  int32_t ppower_l = (int)p_power_l;
+  int32_t ppower_r = (int)p_power_r;
 
-   sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f\n", ppower_r, ppower_l, p_power_r, p_power_l);
-   syslog(LOG_NOTICE, a);
+
+  // sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f\n", ppower_r, ppower_l, p_power_r, p_power_l);
+  // syslog(LOG_NOTICE, a);
 
   p_wheels_control_->P_exec(ppower_l, ppower_r);
 
-  // p_wheels_control_->P_exec(-300, 128);
+  // p_wheels_control_->P_exec(40, 40);
 
-  x = odometry_x;//更新
-  y = odometry_y;//更新　一番最後に
-  //方位角から回転角
-  //回転角からモータパワー
+  // sprintf(a, "a\n");
+  // syslog(LOG_NOTICE, a);
+
+  x = odometry_x; //更新
+  y = odometry_y; //更新　一番最後に
+
+ 
+
+  sprintf(a, "i: %d, target_distance: %f, power_L: %d, power_R: %d, x: %f, y: %f\n target_direction: %f, direction_odo: %f, dif_rad: %f\n", i, target_distance, ppower_l, ppower_r, x, y, target_direction, direction_odo, difference_rad);
+  syslog(LOG_NOTICE, a);
+  
+  
+  if (target_distance < 100)
+  {
+    i = i + 1; 
+  }
+  
 }
 
-Localize::Localize(MotorIo* motor_io, P_WheelsControl* p_wheels_control) {
+Localize::Localize(MotorIo *motor_io, P_WheelsControl *p_wheels_control)
+{
   odometry_ = new Odometry(motor_io);
-  pure_pursuit_ = new PurePursuit(p_wheels_control);
+  pure_pursuit_ = new PurePursuit(motor_io, p_wheels_control);
 }
 
-void Localize::Update() {
+void Localize::Update()
+{
   odometry_->Update();
   distance_ = odometry_->distance;
   odometry_x = odometry_->x;
   odometry_y = odometry_->y;
 
-  simu_x = pure_pursuit_ -> x;
-  simu_y = pure_pursuit_ -> y;
+  simu_x = pure_pursuit_->x;
+  simu_y = pure_pursuit_->y;
 
   // p_target_ind = pure_pursuit_-> target_ind;
 
@@ -246,21 +300,23 @@ void Localize::Update() {
 
   // target_ind[curr_p_index] = p_target_ind;
 
-
-
   real_distance = sqrt(odometry_x * odometry_x + odometry_y * odometry_y);
   // sprintf(str, "real_distance: %f\n", real_distance);
 
   // sprintf(str, "curr_p_index: %d\n", curr_p_index);
-  // syslog(LOG_NOTICE, str); 
+  // syslog(LOG_NOTICE, str);
+
+  // sprintf(str, "x: %f y: %f\n", odometry_x, odometry_y);
+  // syslog(LOG_NOTICE, str);
 
   pure_pursuit_->Update(odometry_x, odometry_y);
 }
 
-void Localize::SaveOdometry() {
-  FILE* fp = fopen("Odome.csv", "w");
+void Localize::SaveOdometry()
+{
+  FILE *fp = fopen("Pursuit.csv", "w");
 
-  char str [256];
+  char str[256];
 
   // for (int i=0; i< curr_p_index; i++) {
   // sprintf(str, "%f, %f\n", simulate_x[i], simulate_y[i]);
@@ -268,18 +324,16 @@ void Localize::SaveOdometry() {
   // fprintf(fp, str);
   // }
 
-
-  for (int i=0; i< curr_p_index; i++) {
-  sprintf(str, "%d, %d, %f, %f, \n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
-  // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
-  fprintf(fp, str);
+  for (int i = 0; i < curr_p_index; i++)
+  {
+    sprintf(str, "%d, %d, %f, %f, \n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
+    // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
+    fprintf(fp, str);
   }
 
   // sprintf(str, "%d, %d, %d\n", p_counts_rs[curr_index], counts_ls[curr_index], curr_index);
   // // sprintf(str, "%d\n", curr_p_index);
   // syslog(LOG_NOTICE, str);
-
-
 
   // for (int i=0; i<curr_index; i++) {
   //   sprintf(str, "%f, %f\n", locate_x[i], locate_y[i]);
@@ -299,11 +353,9 @@ void Localize::SaveOdometry() {
   //    fprintf(fp, str);
   //  }
 
-  //for (int i=0; i<curr_index; i++) {
-  //  sprintf(str, "%f\n", theta_[i]*180/M_PI);
-  //  fprintf(fp, str);
-  //}
+  // for (int i=0; i<curr_index; i++) {
+  //   sprintf(str, "%f\n", theta_[i]*180/M_PI);
+  //   fprintf(fp, str);
+  // }
   fclose(fp);
 }
-
- 
