@@ -233,15 +233,17 @@ private:
   double p_d = 126;
   double p_power_l;
   double p_power_r;
-  int base_p_power = 40;
+  int base_p_power = 20;
   int v = 50;
   char str[256], a[256], b[256], c[256], d[256];
   // double omega;
   // double para = 100;
   //  const float course_x[kCourseParamNum] = {};
   //  const float course_y[kCourseParamNum] = {};
-  double gain_kv = 0.05; //仮想軌道追従
-  double gain_kt = 1;
+  double gain_kv_r = 0.057; //仮想軌道追従
+  double gain_kv_l = 0.05; //仮想軌道追従
+  double gain_kt_r = 5;
+  double gain_kt_l = 5;
   double target_distance = 0;
   double target_direction = 0;
   double difference_rad = 0;

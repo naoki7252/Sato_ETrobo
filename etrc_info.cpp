@@ -237,8 +237,8 @@ void PurePursuit::Update(double odometry_x, double odometry_y)
     difference_rad = difference_rad + 6.28;
   }
 
-  p_power_r = gain_kv * target_distance + gain_kt * difference_rad + base_p_power;
-  p_power_l = gain_kv * target_distance - gain_kt * difference_rad + base_p_power;
+  p_power_r = gain_kv_r * target_distance + gain_kt_r * difference_rad + base_p_power;
+  p_power_l = gain_kv_l * target_distance - gain_kt_l * difference_rad + base_p_power;
 
   int32_t ppower_l = (int)p_power_l;
   int32_t ppower_r = (int)p_power_r;
@@ -263,7 +263,7 @@ void PurePursuit::Update(double odometry_x, double odometry_y)
   syslog(LOG_NOTICE, a);
   
   
-  if (target_distance < 100)
+  if (target_distance < 200)
   {
     i = i + 1; 
   }
@@ -326,7 +326,7 @@ void Localize::SaveOdometry()
 
   for (int i = 0; i < curr_p_index; i++)
   {
-    sprintf(str, "%d, %d, %f, %f, \n", p_counts_rs[i], p_counts_ls[i], p_cordinate_x[i], p_cordinate_y[i]);
+    sprintf(str, "%d, %d, %f, %f, \n", p_counts_ls[i], p_counts_rs[i], p_cordinate_x[i], p_cordinate_y[i]);
     // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
     fprintf(fp, str);
   }
