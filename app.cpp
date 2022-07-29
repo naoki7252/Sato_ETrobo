@@ -7,6 +7,7 @@
 #include "test_runner.h"
 #include "state_manager.h"
 
+//pure_try
 // #include <vector>
 
 static const bool kLcourse = true;
