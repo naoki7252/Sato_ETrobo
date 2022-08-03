@@ -274,6 +274,7 @@ void Localize::Update()
 void Localize::SaveOdometry()
 {
   FILE *fp;
+  char file_name[64];
   time_t timer = time(NULL);
   struct tm* t = localtime(&timer);
 
@@ -281,7 +282,7 @@ void Localize::SaveOdometry()
   fp = fopen(file_name, "w");
   // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
   // fprintf(fp, str);
-  for (int i = 0; i < index;  i++) {
+  for (int i = 0; i < curr_p_index;  i++) {
     sprintf(str, "%d, %d, %f, %f, \n", p_counts_ls[i], p_counts_rs[i], p_cordinate_x[i], p_cordinate_y[i]);
     fprintf(fp, str);
   }
