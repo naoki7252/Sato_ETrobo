@@ -7,15 +7,8 @@
 #include <math.h>
 #include <tuple>
 #include <unistd.h>
-// #include "ev3api.h"
 #include "device_io.h"
 #include "info_type.h"
-// #include "utils.h"
-// #include "driving.h"
-
-// const int kCourseParamNum = 2000;
-
-const int kCourseParamNum = 1734;
 
 class Luminous
 {
@@ -73,23 +66,6 @@ private:
   char str[264];
 };
 
-class CubicSpline
-{
-  // public:
-  //  CubicSpline();
-  //  void setCourseParam();
-  //  double CalcEndpoint(const std::list<double> y);
-  //  double Calc(double t);
-  //  double accl;
-
-  // private:
-  //  std::list<double> a_;
-  //  std::list<double> b_;
-  //  std::list<double> c_;
-  //  std::list<double> d_;
-  //  std::list<double> w_;
-};
-
 class P_WheelsControl
 {
 public:
@@ -105,9 +81,10 @@ class PurePursuit
 {
 public:
   PurePursuit(MotorIo* motor_io, P_WheelsControl* p_wheels_control);
-  double x = 0, y = 0, yaw;
   void Update(double x, double y);
-  void read_trajectry_file_x();
+  double target_distance = 0;
+  double target_direction = 0;
+  double difference_rad = 0;
   int target[103][2] = {
       /*00*/{0, 0}, // 0
       /*01*/{100, 0},
@@ -213,42 +190,22 @@ public:
       /**/{2380, -1638},
       /**/{2380, -1788}};
 
-  int i = 0;
 
 private:
-  double calc_distance(double point_x, double point_y);
-  void readTargetCourseCoordinate();
-  std::tuple<int, double> pursuit_control(int ind);
-  std::tuple<int, double> search_target_index();
   MotorIo* motor_io_; 
   Odometry *odometry_;
   P_WheelsControl *p_wheels_control_;
-
-  int ind;
-  int pre_point_index = INT_MAX;
-  const double lf = 5;
-  double turning_radius;
-  double p_ll;
-  double p_lr;
-  double p_d = 126;
   double p_power_l;
   double p_power_r;
-  int base_p_power = 20;
-  int v = 50;
+  int8_t base_p_power = 20;
   char str[256], a[256], b[256], c[256], d[256];
-  // double omega;
-  // double para = 100;
-  //  const float course_x[kCourseParamNum] = {};
-  //  const float course_y[kCourseParamNum] = {};
-  double gain_kv_r = 0.057; //仮想軌道追従
-  double gain_kv_l = 0.05; //仮想軌道追従
-  double gain_kt_r = 5;
-  double gain_kt_l = 5;
-  double target_distance = 0;
-  double target_direction = 0;
-  double difference_rad = 0;
+  int i = 0;
+  double lf = 200; //先見る距離 
+  double gain_kv_r = 0.057; //比例
+  double gain_kv_l = 0.05; //比例
+  double gain_kt_r = 5; //微分
+  double gain_kt_l = 5; //微分
   double direction_odo;
-  //  CubicSpline* cubic_spline_;
 };
 
 class Localize
@@ -257,29 +214,29 @@ public:
   Localize(MotorIo *motor_io, P_WheelsControl *p_wheels_control);
   void Update();
   void SaveOdometry();
-  double distance_ = 0;
-  double odometry_x = 0;
-  double odometry_y = 0;
-  double simu_x = 0;
-  double simu_y = 0;
-  int p_target_ind;
-  int32_t p_counts_rs[100000] = {};
-  int32_t p_counts_ls[100000] = {};
-
-  double p_cordinate_x[100000] = {};
-  double p_cordinate_y[100000] = {};
-
-  double simulate_x[100000] = {};
-  double simulate_y[100000] = {};
-
-  int32_t target_ind[100000] = {};
-
-  char str[256];
 
 private:
   Odometry *odometry_;
   PurePursuit *pure_pursuit_;
   int curr_p_index = 0;
+  double distance_ = 0;
+  double odometry_x = 0;
+  double odometry_y = 0;
+  // double simu_x = 0;
+  // double simu_y = 0;
+  double target_distance_ = 0;
+  double difference_rad_ = 0;
+  int p_target_ind;
+  int32_t p_counts_rs[100000] = {};
+  int32_t p_counts_ls[100000] = {};
+  double p_cordinate_x[100000] = {};
+  double p_cordinate_y[100000] = {};
+  double simulate_x[100000] = {};
+  double simulate_y[100000] = {};
+  int32_t target_ind[100000] = {};
+  double p_target_distance[100000] = {};
+  double p_difference_rad[100000] = {};
+  char str[256];
   double real_distance = 0;
   // clock_t before_time = 0;
   // char str[264];

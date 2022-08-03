@@ -1,4 +1,5 @@
 #include "etrc_info.h"
+#include "ctime"
 
 Luminous::Luminous(SensorIo *sensor_io, Camera *camera)
     : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera)
@@ -97,25 +98,6 @@ Odometry::Odometry(MotorIo *motor_io)
 
 void Odometry::Update()
 {
-  // unsigned long sec;
-  // clock_gettime(CLOCK_REALTIME, &now_time);
-  // sec = now_time.tv_sec;
-  // secs[curr_index] = sec;
-  // curr_index += 1;
-
-  // unsigned long nsec;
-  // clock_gettime(CLOCK_REALTIME, &now_time);
-  // nsec = now_time.tv_nsec;
-  // secs[curr_index] = nsec;
-  // curr_index += 1;
-  // nsec = now_time.tv_nsec;
-  // clock_t now = clock();
-  // // double a = (static_cast<double>(now-before_time))/CLOCKS_PER_SEC;
-  // // double keep += a;
-  // sprintf(str, "time: %f sum: %f\n", (static_cast<double>(now-before_time))/CLOCKS_PER_SEC);
-  // syslog(LOG_NOTICE, str);
-  // before_time = now;
-
   counts_r_ = motor_io_->counts_r_;
   counts_l_ = motor_io_->counts_l_;
 
@@ -150,11 +132,6 @@ void Odometry::Update()
   distance_right += A;
   theta_[curr_index] = theta_wa;
 
-  // sprintf(str, "%d, %d, %d\n", counts_rs[curr_index], counts_ls[curr_index], curr_index);
-  // syslog(LOG_NOTICE, str);
-
-  // theta_[curr_index] = micro_theta;
-
   // char str[264];
   // sprintf(str, "x: %f y: %f distance: %f distance_right: %f theta_wa:%f\n", x, y, distance_, distance_right, theta_wa);
   // syslog(LOG_NOTICE, str);
@@ -170,10 +147,6 @@ void Odometry::Update()
   // char str[264];
   // sprintf(str, "direction: %f\n", direction);
   // syslog(LOG_NOTICE, str);
-
-  // char str[264];
-  // sprintf(str, "theta: %f\n", theta_wa*180/M_PI);
-  // syslog(LOG_NOTICE, str);
 }
 
 P_WheelsControl::P_WheelsControl(MotorIo *motor_io) : motor_io_(motor_io)
@@ -182,25 +155,25 @@ P_WheelsControl::P_WheelsControl(MotorIo *motor_io) : motor_io_(motor_io)
 
 void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r)
 {
-  int32_t curr_power_l = motor_io_->power_l_;
-  if (target_power_l > curr_power_l)
-  {
-    curr_power_l += 1;
-  }
-  else if (target_power_l < curr_power_l)
-  {
-    curr_power_l -= 1;
-  }
+  // int32_t curr_power_l = motor_io_->power_l_;
+  // if (target_power_l > curr_power_l)
+  // {
+  //   curr_power_l += 1;
+  // }
+  // else if (target_power_l < curr_power_l)
+  // {
+  //   curr_power_l -= 1;
+  // }
 
-  int32_t curr_power_r = motor_io_->power_r_;
-  if (target_power_r > curr_power_r)
-  {
-    curr_power_r += 1;
-  }
-  else if (target_power_r < curr_power_r)
-  {
-    curr_power_r -= 1;
-  }
+  // int32_t curr_power_r = motor_io_->power_r_;
+  // if (target_power_r > curr_power_r)
+  // {
+  //   curr_power_r += 1;
+  // }
+  // else if (target_power_r < curr_power_r)
+  // {
+  //   curr_power_r -= 1;
+  // }
 
   if (target_power_l == 0 && target_power_r == 0)
   {
@@ -208,14 +181,13 @@ void P_WheelsControl::P_exec(int32_t target_power_l, int32_t target_power_r)
   }
   else
   {
-    motor_io_->SetWheelsPower(curr_power_l, curr_power_r);
+    motor_io_->SetWheelsPower(target_power_l, target_power_r);
   }
 }
 
 PurePursuit::PurePursuit(MotorIo *motor_io, P_WheelsControl *p_wheels_control)
     : motor_io_(motor_io), p_wheels_control_(p_wheels_control)
 {
-  // pre_point_index = INT_MAX;
   odometry_ = new Odometry(motor_io);
 }
 
@@ -242,32 +214,17 @@ void PurePursuit::Update(double odometry_x, double odometry_y)
 
   int32_t ppower_l = (int)p_power_l;
   int32_t ppower_r = (int)p_power_r;
-
-
   // sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f\n", ppower_r, ppower_l, p_power_r, p_power_l);
   // syslog(LOG_NOTICE, a);
-
   p_wheels_control_->P_exec(ppower_l, ppower_r);
-
   // p_wheels_control_->P_exec(40, 40);
-
-  // sprintf(a, "a\n");
-  // syslog(LOG_NOTICE, a);
-
-  x = odometry_x; //更新
-  y = odometry_y; //更新　一番最後に
-
- 
-
-  sprintf(a, "i: %d, target_distance: %f, power_L: %d, power_R: %d, x: %f, y: %f\n target_direction: %f, direction_odo: %f, dif_rad: %f\n", i, target_distance, ppower_l, ppower_r, x, y, target_direction, direction_odo, difference_rad);
+  sprintf(a, "i: %d, target_distance: %f, power_L: %d, power_R: %d, x: %f, y: %f\n target_direction: %f, direction_odo: %f, dif_rad: %f\n", i, target_distance, ppower_l, ppower_r, odometry_x, odometry_y, target_direction, direction_odo, difference_rad);
   syslog(LOG_NOTICE, a);
-  
-  
-  if (target_distance < 200)
+
+  if (target_distance < lf) //先見る距離
   {
-    i = i + 1; 
+    i = i + 1;
   }
-  
 }
 
 Localize::Localize(MotorIo *motor_io, P_WheelsControl *p_wheels_control)
@@ -279,15 +236,13 @@ Localize::Localize(MotorIo *motor_io, P_WheelsControl *p_wheels_control)
 void Localize::Update()
 {
   odometry_->Update();
+
   distance_ = odometry_->distance;
   odometry_x = odometry_->x;
   odometry_y = odometry_->y;
 
-  simu_x = pure_pursuit_->x;
-  simu_y = pure_pursuit_->y;
-
-  // p_target_ind = pure_pursuit_-> target_ind;
-
+  // simu_x = pure_pursuit_->x;
+  // simu_y = pure_pursuit_->y;
   curr_p_index = odometry_->curr_index;
   p_counts_rs[curr_p_index] = odometry_->counts_r_;
   p_counts_ls[curr_p_index] = odometry_->counts_l_;
@@ -295,8 +250,8 @@ void Localize::Update()
   p_cordinate_x[curr_p_index] = odometry_x;
   p_cordinate_y[curr_p_index] = odometry_y;
 
-  simulate_x[curr_p_index] = simu_x;
-  simulate_y[curr_p_index] = simu_y;
+  // simulate_x[curr_p_index] = simu_x;
+  // simulate_y[curr_p_index] = simu_y;
 
   // target_ind[curr_p_index] = p_target_ind;
 
@@ -310,13 +265,32 @@ void Localize::Update()
   // syslog(LOG_NOTICE, str);
 
   pure_pursuit_->Update(odometry_x, odometry_y);
+  target_distance_ = pure_pursuit_->target_distance;
+  difference_rad_ = pure_pursuit_->difference_rad;
+  p_target_distance[curr_p_index] = target_distance_;
+  p_difference_rad[curr_p_index] = difference_rad_;
 }
 
 void Localize::SaveOdometry()
 {
-  FILE *fp = fopen("Pursuit.csv", "w");
+  FILE *fp;
+  time_t timer = time(NULL);
+  struct tm* t = localtime(&timer);
 
-  char str[256];
+  sprintf(file_name, "Pursuit_try/data/ododmetry (%d月%d日%d:%d:%d).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+  fp = fopen(file_name, "w");
+  // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
+  // fprintf(fp, str);
+  for (int i = 0; i < index;  i++) {
+    sprintf(str, "%d, %d, %f, %f, \n", p_counts_ls[i], p_counts_rs[i], p_cordinate_x[i], p_cordinate_y[i]);
+    fprintf(fp, str);
+  }
+
+  fclose(fp);
+
+
+  // FILE *fp = fopen("Pursuit.csv", "w");
+  // char str[256];
 
   // for (int i=0; i< curr_p_index; i++) {
   // sprintf(str, "%f, %f\n", simulate_x[i], simulate_y[i]);
@@ -324,12 +298,18 @@ void Localize::SaveOdometry()
   // fprintf(fp, str);
   // }
 
-  for (int i = 0; i < curr_p_index; i++)
-  {
-    sprintf(str, "%d, %d, %f, %f, \n", p_counts_ls[i], p_counts_rs[i], p_cordinate_x[i], p_cordinate_y[i]);
-    // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
-    fprintf(fp, str);
-  }
+  // for (int i = 0; i < curr_p_index; i++)
+  // {
+  //   sprintf(str, "%f, %f\n", p_target_distance[i], p_difference_rad[i]);
+  //   fprintf(fp, str);
+  // }
+
+  // for (int i = 0; i < curr_p_index; i++)
+  // {
+  //   sprintf(str, "%d, %d, %f, %f, \n", p_counts_ls[i], p_counts_rs[i], p_cordinate_x[i], p_cordinate_y[i]);
+  //   // sprintf(str, "%d, %d\n", p_counts_rs[i], p_counts_ls[i]);
+  //   fprintf(fp, str);
+  // }
 
   // sprintf(str, "%d, %d, %d\n", p_counts_rs[curr_index], counts_ls[curr_index], curr_index);
   // // sprintf(str, "%d\n", curr_p_index);
@@ -357,5 +337,5 @@ void Localize::SaveOdometry()
   //   sprintf(str, "%f\n", theta_[i]*180/M_PI);
   //   fprintf(fp, str);
   // }
-  fclose(fp);
+  // fclose(fp);
 }
