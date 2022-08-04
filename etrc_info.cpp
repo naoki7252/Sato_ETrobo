@@ -1,5 +1,6 @@
 #include "etrc_info.h"
 #include "ctime"
+// #include <time.h>
 
 Luminous::Luminous(SensorIo *sensor_io, Camera *camera)
     : color_(kInvalidColor), hsv_({0, 0, 0}), sensor_io_(sensor_io), camera_(camera)
