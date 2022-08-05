@@ -528,7 +528,6 @@ void Localize::SaveOdometry() {
   // char file_name[64];
   // time_t timer = time(NULL);
   // struct tm* t = localtime(&timer);
-
   // sprintf(file_name, "Pure_try/data/ododmetry (%d月%d日%d時%d分%d秒).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
   // fp = fopen(file_name, "w");
   // // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
