@@ -355,8 +355,8 @@ std::tuple<int, double> PurePursuit::pursuit_control(int pind) {
 
   double alpha = atan2(ty - y, tx - x);
 
-    sprintf(d, "x: %f, y: %f\n", x, y);
-    syslog(LOG_NOTICE, d);
+    // sprintf(d, "x: %f, y: %f\n", x, y);
+    // syslog(LOG_NOTICE, d);
 
   return std::forward_as_tuple(target_ind, alpha);
 }
@@ -487,11 +487,17 @@ void Localize::Update() {
   // syslog(LOG_NOTICE, str); 
 
   pure_pursuit_->Update(odometry_x, odometry_y);
+
+  base_p_power_ = pure_pursuit_->base_p_power;
+  lf_ = pure_pursuit_->lf;
+  gain_kv_r_ = pure_pursuit_->gain_kv_r;
+  gain_kv_l_ = pure_pursuit_->gain_kv_l;
+  gain_kt_r_ = pure_pursuit_->gain_kt_r;
+  gain_kt_l_ = pure_pursuit_->gain_kt_l;
 }
 
 void Localize::SaveOdometry() {
 
-  char str [256];
   char file_name[64];
   FILE* fp;
 
@@ -509,8 +515,9 @@ void Localize::SaveOdometry() {
 
   fp = fopen(file_name, "w");
   sprintf(str, "base_power, lf, kv_r, kv_l, kt_r, kt_l \n");
-  sprintf(str, "%d, %d, %f, %f, %f, %f \n", base_power, );
+  sprintf(str_, "%d, %f, %f, %f, %f, %f \n", base_p_power_, lf_, gain_kv_r_, gain_kv_l_, gain_kt_r_, gain_kt_l_);
   fprintf(fp, str);
+  fprintf(fp, str_);
   for (int i = 0; i < curr_p_index;  i++) {
     sprintf(str,"%f, %f\n", p_cordinate_x[i], p_cordinate_y[i]);
     fprintf(fp, str);

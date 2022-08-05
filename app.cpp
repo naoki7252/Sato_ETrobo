@@ -16,7 +16,7 @@ MotorIo* motor_io;
 SensorIo* sensor_io;
 Camera* camera;
 Luminous* luminous;
-// Pursuit* pursuit;
+PurePursuit* pure_pursuit;
 Odometry* odometry;
 P_WheelsControl* p_wheels_control;
 Localize* localize;
@@ -36,7 +36,7 @@ static void initialize() {
   sensor_io = new SensorIo();
   camera = new Camera();
   luminous = new Luminous(sensor_io, camera);
-  // pursuit = new Pursuit();
+  pure_pursuit = new PurePursuit(motor_io, p_wheels_control);
   odometry = new Odometry(motor_io);
   p_wheels_control = new P_WheelsControl(motor_io);
   localize = new Localize(motor_io, p_wheels_control);
@@ -65,6 +65,7 @@ static void finalize() {
   delete wheels_control;
   delete localize;
   delete odometry;
+  delete pure_pursuit;
   delete luminous;
   delete camera;
   delete sensor_io;
@@ -88,6 +89,12 @@ void main_task(intptr_t unused) {
 
   while (true) {
     if (sensor_io->touch_sensor_pressed_) break;
+
+    // if(pure_pursuit->target_ind >= 1132){
+    // initialize();
+    // sta_cyc(UPDATE_INFO_CYC);
+    // sta_cyc(EXEC_ACTION_CYC);
+    // } 
     tslp_tsk(100*1000U);
   }
 
@@ -103,7 +110,6 @@ void exec_action_task(intptr_t unused) {
   // state_manager->Update(); //戻す
   // motor_io->Rotate();
   localize->Update();
-  // localize -> SaveOdometry();
   ext_tsk();
 }
 
