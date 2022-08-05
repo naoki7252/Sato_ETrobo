@@ -372,61 +372,82 @@ void PurePursuit::Update(double odometry_x, double odometry_y) {
   if (pre_point_index == INT_MAX) {
   std::tie(target_ind, p_lf) = search_target_index();
   }
-
-
   // std::tie(target_ind, lf) = search_target_index();
 
    //sprintf(a, "target_ind: %d\n", target_ind);
    //syslog(LOG_NOTICE, a);
 
   std::tie(target_ind, delta) = pursuit_control(target_ind);
-     target_distance = calc_distance(course_x[target_ind], course_y[target_ind]);
-     target_direction = delta;
-     //double L = calc_distance(177, 156);
+    
+    target_distance = calc_distance(course_x[target_ind], course_y[target_ind]);
+    target_direction = delta;
+    difference_rad = target_direction - direction_odo;
+
+    while (difference_rad > 4.7) //第四象限からの変換（偏角）
+    {
+      difference_rad = difference_rad - 6.28;
+    }
+    while (difference_rad < -4.7)
+    {
+      difference_rad = difference_rad + 6.28;
+    }
+
+    p_power_r = gain_kv_r * target_distance + gain_kt_r * difference_rad + base_p_power;
+    p_power_l = gain_kv_l * target_distance - gain_kt_l * difference_rad + base_p_power;
+
+    int32_t ppower_l = (int)p_power_l;
+    int32_t ppower_r = (int)p_power_r;
+
+    p_wheels_control_->P_exec(ppower_l, ppower_r);
+
+    sprintf(a, "target_ind: %d, target_distance: %f, power_L: %d, power_R: %d, x: %f, y: %f\n target_direction: %f, direction_odo: %f, dif_rad: %f\n", target_ind, target_distance, ppower_l, ppower_r, odometry_x, odometry_y, target_direction, direction_odo, difference_rad);
+    syslog(LOG_NOTICE, a);
+
+    //double L = calc_distance(177, 156);
     //turning_radius = L / (2*sin(delta));
     //  omega = base_p_power * 2 * sin(delta) / L;
     //  p_lr = (turning_radius - p_d/2) * delta;
     //  p_ll = (turning_radius + p_d/2) * delta;
-      // omega = omega * para;
-      // p_power_r = base_p_power + omega;
-      // p_power_l = base_p_power - omega;
+    // omega = omega * para;
+    // p_power_r = base_p_power + omega;
+    // p_power_l = base_p_power - omega;
 
   
   
-  // double theta = M_PI;
-  // // double theta = 0; 
-  // double L = 100;
-  // if (theta == 0 || theta == M_PI) turning_radius = 0; 
-  // else turning_radius = L / (2 * sin(theta));
-  // p_lr = (turning_radius - p_d/2) * theta;
-  // p_ll = (turning_radius + p_d/2) * theta;
+    // double theta = M_PI;
+    // // double theta = 0; 
+    // double L = 100;
+    // if (theta == 0 || theta == M_PI) turning_radius = 0; 
+    // else turning_radius = L / (2 * sin(theta));
+    // p_lr = (turning_radius - p_d/2) * theta;
+    // p_ll = (turning_radius + p_d/2) * theta;
 
-  // p_power_r = 70;
-  // p_power_l = 70;
+    // p_power_r = 70;
+    // p_power_l = 70;
 
-  // p_power_r = base_p_power * p_lr/(p_lr + p_ll);
-  // p_power_l = base_p_power * p_ll/(p_lr + p_ll);
+    // p_power_r = base_p_power * p_lr/(p_lr + p_ll);
+    // p_power_l = base_p_power * p_ll/(p_lr + p_ll);
 
 
-  // sprintf(str, "target_ind: %d\n", target_ind);
+    // sprintf(str, "target_ind: %d\n", target_ind);
 
-  int32_t ppower_l =  (int)p_power_l; 
-  int32_t ppower_r =  (int)p_power_r; 
+    // int32_t ppower_l =  (int)p_power_l; 
+    // int32_t ppower_r =  (int)p_power_r; 
 
-   sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f, omega: %f, target_ind: %d\n", ppower_r, ppower_l, p_power_r, p_power_l, delta, target_ind);
-   syslog(LOG_NOTICE, a);
+    // sprintf(a, "int_r: %d, int_l: %d, double_r: %f, double_l: %f, omega: %f, target_ind: %d\n", ppower_r, ppower_l, p_power_r, p_power_l, delta, target_ind);
+    // syslog(LOG_NOTICE, a);
 
-  p_wheels_control_->P_exec(ppower_l, ppower_r);
+    // p_wheels_control_->P_exec(ppower_l, ppower_r);
 
-  // p_wheels_control_->P_exec(-300, 128);
+    // p_wheels_control_->P_exec(-300, 128);
 
-  //x += v * cos(delta); 
-  //y += v * sin(delta); 
+    //x += v * cos(delta); 
+    //y += v * sin(delta); 
 
-  x = odometry_x;//更新
-  y = odometry_y;//更新　一番最後に
-  //方位角から回転角
-  //回転角からモータパワー
+    x = odometry_x;//更新
+    y = odometry_y;//更新　一番最後に
+    //方位角から回転角
+    //回転角からモータパワー
 }
 
 Localize::Localize(MotorIo* motor_io, P_WheelsControl* p_wheels_control) {
