@@ -487,24 +487,57 @@ void Localize::Update() {
   // syslog(LOG_NOTICE, str); 
 
   pure_pursuit_->Update(odometry_x, odometry_y);
+
+  base_p_power_ = pure_pursuit_->base_p_power;
+  lf_ = pure_pursuit_->lf;
+  gain_kv_r_ = pure_pursuit_->gain_kv_r;
+  gain_kv_l_ = pure_pursuit_->gain_kv_l;
+  gain_kt_r_ = pure_pursuit_->gain_kt_r;
+  gain_kt_l_ = pure_pursuit_->gain_kt_l;
 }
 
 void Localize::SaveOdometry() {
-  FILE *fp;
-  char file_name[64];
-  time_t timer = time(NULL);
-  struct tm* t = localtime(&timer);
 
-  sprintf(file_name, "Pure_try/data/ododmetry (%d月%d日%d時%d分%d秒).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-  fp = fopen(file_name, "w");
-  // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
-  // fprintf(fp, str);
-  for (int i = 0; i < curr_p_index;  i++) {
-    sprintf(str, "%f, %f, \n", p_cordinate_x[i], p_cordinate_y[i]);
-    fprintf(fp, str);
+  char file_name[64];
+  FILE* fp;
+
+  int i = 1;
+  while(true){
+    snprintf(file_name,sizeof(char)*64,"Pure_try/data/odometry%i.csv",i);
+
+    if(fp = fopen(file_name,"r")){
+      fclose(fp);
+    } else {
+      break;
+    }
+    i++;
   }
 
+  fp = fopen(file_name, "w");
+  sprintf(str, "base_power, lf, kv_r, kv_l, kt_r, kt_l \n");
+  sprintf(str_, "%d, %f, %f, %f, %f, %f \n", base_p_power_, lf_, gain_kv_r_, gain_kv_l_, gain_kt_r_, gain_kt_l_);
+  fprintf(fp, str);
+  fprintf(fp, str_);
+  for (int i = 0; i < curr_p_index;  i++) {
+    sprintf(str,"%f, %f\n", p_cordinate_x[i], p_cordinate_y[i]);
+    fprintf(fp, str);
+  }
   fclose(fp);
+
+  // FILE *fp;
+  // char file_name[64];
+  // time_t timer = time(NULL);
+  // struct tm* t = localtime(&timer);
+
+  // sprintf(file_name, "Pure_try/data/ododmetry (%d月%d日%d時%d分%d秒).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+  // fp = fopen(file_name, "w");
+  // // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
+  // // fprintf(fp, str);
+  // for (int i = 0; i < curr_p_index;  i++) {
+  //   sprintf(str, "%f, %f, \n", p_cordinate_x[i], p_cordinate_y[i]);
+  //   fprintf(fp, str);
+  // }
+  // fclose(fp);
 
 
   // for (int i=0; i< curr_p_index; i++) {
