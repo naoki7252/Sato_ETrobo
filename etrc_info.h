@@ -131,25 +131,25 @@ class PurePursuit {
    P_WheelsControl* p_wheels_control_;
 
    int ind;
+   int target_ind;
    int pre_point_index= INT_MAX;
-   const double lf = 200;
+   const double lf = 250;
    double turning_radius;
-   double p_ll;
-   double p_lr;
-   double p_d = 126;
+  //  double p_ll;
+  //  double p_lr;
+  //  double p_d = 126;
    double p_power_l;
    double p_power_r;
-   int base_p_power = 20; 
-   int v = 50;
+   int base_p_power = 60; 
+  //  int v = 50;
    char str [256],a[256],b[256],c[256],d[256];
    double gain_kv_r = 0.057; //比例
    double gain_kv_l = 0.05; //比例
-   double gain_kt_r = 5; //微分
-   double gain_kt_l = 5; //微分
+   double gain_kt_r = 5.5; //微分
+   double gain_kt_l = 5.5; //微分
    double direction_odo;
    double p_lf;
    double delta = 0;
-   int target_ind;
 
   //  double omega;
   //  double para = 100;  //  const float course_x[kCourseParamNum] = {};
