@@ -133,14 +133,14 @@ class PurePursuit {
    int ind;
    int target_ind;
    int pre_point_index= INT_MAX;
-   const double lf = 250;
+   const double lf = 150;
    double turning_radius;
   //  double p_ll;
   //  double p_lr;
   //  double p_d = 126;
    double p_power_l;
    double p_power_r;
-   int base_p_power = 60; 
+   int base_p_power = 40; 
   //  int v = 50;
    char str [256],a[256],b[256],c[256],d[256];
    double gain_kv_r = 0.057; //比例
