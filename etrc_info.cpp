@@ -490,21 +490,49 @@ void Localize::Update() {
 }
 
 void Localize::SaveOdometry() {
-  FILE *fp;
-  char file_name[64];
-  time_t timer = time(NULL);
-  struct tm* t = localtime(&timer);
 
-  sprintf(file_name, "Pure_try/data/ododmetry (%d月%d日%d時%d分%d秒).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+  char str [256];
+  char file_name[64];
+  FILE* fp;
+
+  int i = 1;
+  while(true){
+    snprintf(file_name,sizeof(char)*64,"Auto_pursuit/data/odometry%i.csv",i);
+
+    if(fp = fopen(file_name,"r")){
+      fclose(fp);
+    } else {
+      break;
+    }
+    i++;
+  }
+
   fp = fopen(file_name, "w");
-  // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
-  // fprintf(fp, str);
+  sprintf(str, "base_power, lf, kv_r, kv_l, kt_r, kt_l \n");
+  sprintf(str, "%d, %d, %f, %f, %f, %f \n", base_power, );
+  fprintf(fp, str);
   for (int i = 0; i < curr_p_index;  i++) {
-    sprintf(str, "%f, %f, \n", p_cordinate_x[i], p_cordinate_y[i]);
+    sprintf(str,"%f, %f\n", p_cordinate_x[i], p_cordinate_y[i]);
     fprintf(fp, str);
   }
 
   fclose(fp);
+
+  // FILE *fp;
+  // char file_name[64];
+  // time_t timer = time(NULL);
+  // struct tm* t = localtime(&timer);
+
+  // sprintf(file_name, "Pure_try/data/ododmetry (%d月%d日%d時%d分%d秒).csv", t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+  // fp = fopen(file_name, "w");
+  // // sprintf(str, "motor_l ,motar_r ,motor_l_lowpass ,motor_r_lowpass\n");
+  // // fprintf(fp, str);
+  // for (int i = 0; i < curr_p_index;  i++) {
+  //   sprintf(str, "%f, %f, \n", p_cordinate_x[i], p_cordinate_y[i]);
+  //   fprintf(fp, str);
+  // }
+
+  // fclose(fp);
 
 
   // for (int i=0; i< curr_p_index; i++) {
