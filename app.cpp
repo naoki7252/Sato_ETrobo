@@ -7,7 +7,6 @@
 #include "test_runner.h"
 #include "state_manager.h"
 
-//pure_try
 // #include <vector>
 
 static const bool kLcourse = true;
@@ -86,6 +85,19 @@ void main_task(intptr_t unused) {
   sta_cyc(EXEC_ACTION_CYC);
 
   tslp_tsk(TASK_INTERVAL_DT_MS*1000U);
+
+  // while (true) {
+  //   if(pure_pursuit->target_ind >= 1132){
+  //   stp_cyc(EXEC_ACTION_CYC);
+  //   stp_cyc(UPDATE_INFO_CYC);
+  //   finalize();
+  //   initialize();
+  //   sta_cyc(UPDATE_INFO_CYC);
+  //   sta_cyc(EXEC_ACTION_CYC);
+  //   // tslp_tsk(TASK_INTERVAL_DT_MS*1000U);
+  //   } 
+  //   tslp_tsk(100*1000U);
+  // }
 
   while (true) {
     if (sensor_io->touch_sensor_pressed_) break;
