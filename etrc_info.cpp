@@ -503,7 +503,7 @@ void Localize::SaveOdometry() {
 
   int i = 1;
   while(true){
-    snprintf(file_name,sizeof(char)*64,"Pure_try/data/odometry%i.csv",i);
+    snprintf(file_name,sizeof(char)*64,"Pure/data/odometry%i.csv",i);
 
     if(fp = fopen(file_name,"r")){
       fclose(fp);
